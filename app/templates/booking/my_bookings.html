@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2">My Bookings</h1>
+    <p class="text-gray-600">Manage all your travel bookings</p>
+</div>
+
+<!-- Filter Options -->
+<div class="mb-6">
+    <div class="bg-white border border-gray-200 rounded p-4">
+        <div class="flex flex-wrap items-center gap-4">
+            <span class="text-gray-700 font-medium">Filter by status:</span>
+            <a href="{{ url_for('booking.my_bookings') }}" 
+               class="px-3 py-1 rounded-full {% if not status_filter %}bg-blue-500 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %} transition-colors">
+                All
+            </a>
+            <a href="{{ url_for('booking.my_bookings', status='PENDING_PAYMENT') }}" 
+               class="px-3 py-1 rounded-full {% if status_filter == 'PENDING_PAYMENT' %}bg-yellow-500 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %} transition-colors">
+                Pending Payment
+            </a>
+            <a href="{{ url_for('booking.my_bookings', status='CONFIRMED') }}" 
+               class="px-3 py-1 rounded-full {% if status_filter == 'CONFIRMED' %}bg-green-500 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %} transition-colors">
+                Confirmed
+            </a>
+            <a href="{{ url_for('booking.my_bookings', status='COMPLETED') }}" 
+               class="px-3 py-1 rounded-full {% if status_filter == 'COMPLETED' %}bg-blue-500 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %} transition-colors">
+                Completed
+            </a>
+            <a href="{{ url_for('booking.my_bookings', status='CANCELLED') }}" 
+               class="px-3 py-1 rounded-full {% if status_filter == 'CANCELLED' %}bg-red-500 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %} transition-colors">
+                Cancelled
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Bookings List -->
+{% if bookings.items %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for booking in bookings.items %}
+            <div class="bg-white border border-gray-200 rounded overflow-hidden">
+                <div class="p-4 border-b border-gray-200">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h2 class="text-lg font-bold text-gray-800">{{ booking.travel_package.name }}</h2>
+                            <p class="text-gray-600">{{ booking.travel_package.destination }}</p>
+                        </div>
+                        
+                        {% set status_class = {
+                            'PENDING_PAYMENT': 'bg-yellow-100 text-yellow-800',
+                            'CONFIRMED': 'bg-green-100 text-green-800',
+                            'CANCELLED': 'bg-red-100 text-red-800',
+                            'COMPLETED': 'bg-blue-100 text-blue-800'
+                        } %}
+                        
+                        <span class="px-2 py-1 text-xs font-medium rounded-full {{ status_class.get(booking.status, 'bg-gray-100 text-gray-800') }}">
+                            {{ booking.status }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="p-4 space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Dates:</span>
+                        <span class="text-gray-800">{{ booking.start_date.strftime('%b %d') }} - {{ booking.end_date.strftime('%b %d, %Y') }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Guests:</span>
+                        <span class="text-gray-800">{{ booking.num_guests }}</span>
+                    </div>
+                    <div class="flex justify-between font-medium">
+                        <span class="text-gray-600">Total:</span>
+                        <span class="text-gray-800">${{ "%.2f"|format(booking.total_price) }}</span>
+                    </div>
+                    
+                    <div class="pt-3 border-t border-gray-200 flex flex-wrap gap-2 justify-end">
+                        <a href="{{ url_for('booking.booking_detail', booking_id=booking.id) }}" 
+                           class="text-blue-500 hover:text-blue-700 font-medium">
+                            View Details
+                        </a>
+                        
+                        {% if booking.status == 'PENDING_PAYMENT' %}
+                            <a href="{{ url_for('booking.payment', booking_id=booking.id) }}" 
+                               class="text-green-500 hover:text-green-700 font-medium">
+                                Complete Payment
+                            </a>
+                        {% endif %}
+                        
+                        {% if booking.status == 'CONFIRMED' %}
+                            <form action="{{ url_for('booking.cancel_booking', booking_id=booking.id) }}" method="post" class="inline">
+                                <button type="submit" 
+                                       class="text-red-500 hover:text-red-700 font-medium"
+                                       onclick="return confirm('Are you sure you want to cancel this booking?')">
+                                    Cancel Booking
+                                </button>
+                            </form>
+                        {% endif %}
+                        
+                        {% if booking.status == 'COMPLETED' %}
+                            {% set has_review = False %}
+                            {% for review in booking.travel_package.reviews %}
+                                {% if review.user_id == current_user.id %}
+                                    {% set has_review = True %}
+                                    {% break %}
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if not has_review %}
+                                <a href="{{ url_for('travel.submit_review', package_id=booking.package_id) }}" 
+                                   class="text-blue-500 hover:text-blue-700 font-medium">
+                                    Write Review
+                                </a>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Pagination -->
+    {% if bookings.pages > 1 %}
+        <div class="mt-8 flex justify-center">
+            <nav class="inline-flex" aria-label="Pagination">
+                <ul class="flex items-center">
+                    {% if bookings.has_prev %}
+                        <li>
+                            <a href="{{ url_for('booking.my_bookings', page=bookings.prev_num, status=status_filter) }}" 
+                               class="px-3 py-2 border border-gray-300 rounded-l-md text-gray-700 bg-white hover:bg-gray-50" 
+                               aria-label="Previous page">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for page_num in bookings.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                        {% if page_num %}
+                            {% if page_num == bookings.page %}
+                                <li>
+                                    <span class="px-4 py-2 border border-gray-300 bg-blue-500 text-white font-medium" 
+                                          aria-current="page">
+                                        {{ page_num }}
+                                    </span>
+                                </li>
+                            {% else %}
+                                <li>
+                                    <a href="{{ url_for('booking.my_bookings', page=page_num, status=status_filter) }}" 
+                                       class="px-4 py-2 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50">
+                                        {{ page_num }}
+                                    </a>
+                                </li>
+                            {% endif %}
+                        {% else %}
+                            <li>
+                                <span class="px-2 py-2 border border-gray-300 text-gray-700 bg-white">
+                                    &hellip;
+                                </span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if bookings.has_next %}
+                        <li>
+                            <a href="{{ url_for('booking.my_bookings', page=bookings.next_num, status=status_filter) }}" 
+                               class="px-3 py-2 border border-gray-300 rounded-r-md text-gray-700 bg-white hover:bg-gray-50" 
+                               aria-label="Next page">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    {% endif %}
+{% else %}
+    <div class="bg-white border border-gray-200 rounded p-8 text-center">
+        <svg class="h-16 w-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+        </svg>
+        <h2 class="text-xl font-bold text-gray-800 mb-2">No Bookings Found</h2>
+        <p class="text-gray-600 mb-6">
+            {% if status_filter %}
+                You don't have any {{ status_filter|lower|replace('_', ' ') }} bookings.
+            {% else %}
+                You haven't made any bookings yet.
+            {% endif %}
+        </p>
+        <a href="{{ url_for('travel.packages') }}" class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded transition-colors">
+            Explore Packages
+        </a>
+    </div>
+{% endif %}
+{% endblock %}

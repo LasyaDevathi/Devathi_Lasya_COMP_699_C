@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2">Travel Packages</h1>
+    <p class="text-gray-600">Discover our curated collection of extraordinary travel experiences</p>
+</div>
+
+<!-- Featured Categories -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+    <a href="{{ url_for('travel.search_packages', destination='bali') }}" class="block relative overflow-hidden rounded h-40 group">
+        <img src="https://source.unsplash.com/random/450x200/?bali" alt="Bali" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+        <div class="absolute bottom-0 left-0 p-4 text-white">
+            <h3 class="text-xl font-bold">Bali Paradise</h3>
+            <p>Tropical getaways</p>
+        </div>
+    </a>
+    
+    <a href="{{ url_for('travel.search_packages', destination='europe') }}" class="block relative overflow-hidden rounded h-40 group">
+        <img src="https://source.unsplash.com/random/450x200/?europe" alt="Europe" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+        <div class="absolute bottom-0 left-0 p-4 text-white">
+            <h3 class="text-xl font-bold">European Tours</h3>
+            <p>Cultural experiences</p>
+        </div>
+    </a>
+    
+    <a href="{{ url_for('travel.search_packages', destination='adventure') }}" class="block relative overflow-hidden rounded h-40 group">
+        <img src="https://source.unsplash.com/random/450x200/?adventure" alt="Adventure" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+        <div class="absolute bottom-0 left-0 p-4 text-white">
+            <h3 class="text-xl font-bold">Adventures</h3>
+            <p>Thrill-seeking experiences</p>
+        </div>
+    </a>
+</div>
+
+<!-- All Packages -->
+<div class="mb-6 flex justify-between items-center">
+    <h2 class="text-xl font-bold text-gray-800">All Packages</h2>
+    <form action="{{ url_for('travel.search_packages') }}" method="get" class="flex items-center">
+        <input type="text" name="query" placeholder="Search packages..." 
+               class="px-4 py-2 border border-gray-300 rounded-l focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-r hover:bg-blue-600 transition-colors">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+        </button>
+    </form>
+</div>
+
+<!-- Packages Grid -->
+{% if packages.items %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for package in packages.items %}
+            <article class="bg-white border border-gray-200 rounded overflow-hidden transition-transform hover:translate-y-[-4px]">
+                <div class="relative">
+                    <img src="{{ package.image_url }}" alt="{{ package.name }}" class="w-full h-48 object-cover" 
+                         onerror="this.src='https://via.placeholder.com/300x200?text={{ package.destination }}'; this.onerror='';">
+                    <div class="absolute top-0 right-0 bg-yellow-400 text-gray-800 text-sm font-medium px-3 py-1 m-2 rounded">
+                        ${{ package.price_per_day }} / day
+                    </div>
+                </div>
+                <div class="p-5">
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">{{ package.name }}</h3>
+                    <div class="flex items-center text-gray-600 mb-2">
+                        <svg class="h-5 w-5 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span>{{ package.destination }}</span>
+                    </div>
+                    <div class="flex items-center text-gray-600 mb-4">
+                        <svg class="h-5 w-5 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span>{{ package.duration_days }} days</span>
+                    </div>
+                    <p class="text-gray-600 mb-4 line-clamp-2">{{ package.description }}</p>
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-2 sm:space-y-0">
+                        <a href="{{ url_for('travel.package_detail', package_id=package.id) }}" 
+                           class="text-blue-500 hover:text-blue-700 font-medium">
+                            View Details
+                        </a>
+                        <a href="{{ url_for('booking.book_package', package_id=package.id) }}" 
+                           class="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded transition-colors text-center">
+                            Book Now
+                        </a>
+                    </div>
+                </div>
+            </article>
+        {% endfor %}
+    </div>
+    
+    <!-- Pagination -->
+    {% if packages.pages > 1 %}
+        <div class="mt-8 flex justify-center">
+            <nav class="inline-flex" aria-label="Pagination">
+                <ul class="flex items-center">
+                    {% if packages.has_prev %}
+                        <li>
+                            <a href="{{ url_for('travel.packages', page=packages.prev_num) }}" 
+                               class="px-3 py-2 border border-gray-300 rounded-l-md text-gray-700 bg-white hover:bg-gray-50" 
+                               aria-label="Previous page">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for page_num in packages.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                        {% if page_num %}
+                            {% if page_num == packages.page %}
+                                <li>
+                                    <span class="px-4 py-2 border border-gray-300 bg-blue-500 text-white font-medium" 
+                                          aria-current="page">
+                                        {{ page_num }}
+                                    </span>
+                                </li>
+                            {% else %}
+                                <li>
+                                    <a href="{{ url_for('travel.packages', page=page_num) }}" 
+                                       class="px-4 py-2 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50">
+                                        {{ page_num }}
+                                    </a>
+                                </li>
+                            {% endif %}
+                        {% else %}
+                            <li>
+                                <span class="px-2 py-2 border border-gray-300 text-gray-700 bg-white">
+                                    &hellip;
+                                </span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if packages.has_next %}
+                        <li>
+                            <a href="{{ url_for('travel.packages', page=packages.next_num) }}" 
+                               class="px-3 py-2 border border-gray-300 rounded-r-md text-gray-700 bg-white hover:bg-gray-50" 
+                               aria-label="Next page">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    {% endif %}
+{% else %}
+    <div class="bg-white border border-gray-200 rounded p-8 text-center">
+        <svg class="h-16 w-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <h2 class="text-xl font-bold text-gray-800 mb-2">No packages available</h2>
+        <p class="text-gray-600">Sorry, there are no travel packages available at the moment.</p>
+    </div>
+{% endif %}
+
+<!-- Newsletter Section -->
+<section class="mt-12 p-8 bg-blue-50 rounded border border-blue-100">
+    <div class="max-w-2xl mx-auto text-center">
+        <h2 class="text-2xl font-bold text-gray-800 mb-2">Get Travel Deals & Updates</h2>
+        <p class="text-gray-600 mb-6">Subscribe to our newsletter and never miss our special offers and travel tips.</p>
+        
+        <form class="flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
+            <input type="email" placeholder="Your email address" 
+                   class="flex-grow px-4 py-2 border border-gray-300 rounded sm:rounded-r-none focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded sm:rounded-l-none transition-colors">
+                Subscribe
+            </button>
+        </form>
+    </div>
+</section>
+{% endblock %}

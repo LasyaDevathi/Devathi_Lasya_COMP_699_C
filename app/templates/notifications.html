@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mb-6 flex justify-between items-center">
+    <div>
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2">Notifications</h1>
+        <p class="text-gray-600">Stay updated with important information about your bookings</p>
+    </div>
+    
+    {% if unread_notifications %}
+        <form action="{{ url_for('main.mark_all_notifications_read') }}" method="post">
+            <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors">
+                Mark All as Read
+            </button>
+        </form>
+    {% endif %}
+</div>
+
+<!-- Notification Tabs -->
+<div class="bg-white border border-gray-200 rounded overflow-hidden mb-10">
+    <div class="border-b border-gray-200">
+        <nav class="flex" aria-label="Notification categories">
+            <button id="unread-tab" aria-selected="true" aria-controls="unread-panel"
+                   class="text-blue-500 border-b-2 border-blue-500 py-4 px-6 font-medium tab-button">
+                Unread
+                {% if unread_notifications %}
+                    <span class="ml-2 bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+                        {{ unread_notifications|length }}
+                    </span>
+                {% endif %}
+            </button>
+            <button id="read-tab" aria-selected="false" aria-controls="read-panel"
+                   class="text-gray-500 hover:text-gray-700 py-4 px-6 font-medium tab-button">
+                Read
+            </button>
+        </nav>
+    </div>
+    
+    <!-- Unread Notifications -->
+    <div id="unread-panel" class="tab-panel">
+        {% if unread_notifications %}
+            <div class="divide-y divide-gray-200">
+                {% for notification in unread_notifications %}
+                    <div class="notification-item p-4 {% if not notification.is_read %}bg-blue-50{% endif %}" data-id="{{ notification.id }}">
+                        <div class="flex items-start">
+                            {% set icon_class = {
+                                'BOOKING_CONFIRMATION': 'bg-green-100 text-green-500',
+                                'PAYMENT_CONFIRMATION': 'bg-blue-100 text-blue-500',
+                                'BOOKING_REMINDER': 'bg-yellow-100 text-yellow-500',
+                                'BOOKING_CANCELLATION': 'bg-red-100 text-red-500'
+                            } %}
+                            
+                            {% set icon_path = {
+                                'BOOKING_CONFIRMATION': 'M5 13l4 4L19 7',
+                                'PAYMENT_CONFIRMATION': 'M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z',
+                                'BOOKING_REMINDER': 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
+                                'BOOKING_CANCELLATION': 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z'
+                            } %}
+                            
+                            <div class="flex-shrink-0 h-10 w-10 rounded-full {{ icon_class.get(notification.type, 'bg-gray-100 text-gray-500') }} flex items-center justify-center">
+                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ icon_path.get(notification.type, 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z') }}"></path>
+                                </svg>
+                            </div>
+                            
+                            <div class="ml-4 flex-1">
+                                <div class="flex justify-between">
+                                    <h3 class="text-base font-medium text-gray-800">{{ notification.title }}</h3>
+                                    <time class="text-xs text-gray-500" datetime="{{ notification.created_at.isoformat() }}">
+                                        {{ notification.created_at.strftime('%b %d, %Y') }}
+                                    </time>
+                                </div>
+                                <p class="text-gray-600 mt-1">{{ notification.message }}</p>
+                                
+                                <div class="mt-2 flex space-x-4">
+                                    <form action="{{ url_for('main.mark_notification_read', notification_id=notification.id) }}" method="post" class="inline mark-read-form">
+                                        <button type="submit" class="text-blue-500 hover:text-blue-700 text-sm font-medium">
+                                            Mark as Read
+                                        </button>
+                                    </form>
+                                    
+                                    <form action="{{ url_for('main.delete_notification', notification_id=notification.id) }}" method="post" class="inline delete-form">
+                                        <button type="submit" class="text-red-500 hover:text-red-700 text-sm font-medium">
+                                            Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="py-12 text-center">
+                <svg class="h-16 w-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                </svg>
+                <p class="text-gray-600">You don't have any unread notifications.</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Read Notifications -->
+    <div id="read-panel" class="tab-panel hidden">
+        {% if read_notifications %}
+            <div class="divide-y divide-gray-200">
+                {% for notification in read_notifications %}
+                    <div class="notification-item p-4" data-id="{{ notification.id }}">
+                        <div class="flex items-start">
+                            {% set icon_class = {
+                                'BOOKING_CONFIRMATION': 'bg-green-100 text-green-500',
+                                'PAYMENT_CONFIRMATION': 'bg-blue-100 text-blue-500',
+                                'BOOKING_REMINDER': 'bg-yellow-100 text-yellow-500',
+                                'BOOKING_CANCELLATION': 'bg-red-100 text-red-500'
+                            } %}
+                            
+                            {% set icon_path = {
+                                'BOOKING_CONFIRMATION': 'M5 13l4 4L19 7',
+                                'PAYMENT_CONFIRMATION': 'M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z',
+                                'BOOKING_REMINDER': 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
+                                'BOOKING_CANCELLATION': 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z'
+                            } %}
+                            
+                            <div class="flex-shrink-0 h-10 w-10 rounded-full {{ icon_class.get(notification.type, 'bg-gray-100 text-gray-500') }} flex items-center justify-center">
+                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ icon_path.get(notification.type, 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z') }}"></path>
+                                </svg>
+                            </div>
+                            
+                            <div class="ml-4 flex-1">
+                                <div class="flex justify-between">
+                                    <h3 class="text-base font-medium text-gray-800">{{ notification.title }}</h3>
+                                    <time class="text-xs text-gray-500" datetime="{{ notification.created_at.isoformat() }}">
+                                        {{ notification.created_at.strftime('%b %d, %Y') }}
+                                    </time>
+                                </div>
+                                <p class="text-gray-600 mt-1">{{ notification.message }}</p>
+                                
+                                <div class="mt-2">
+                                    <form action="{{ url_for('main.delete_notification', notification_id=notification.id) }}" method="post" class="inline delete-form">
+                                        <button type="submit" class="text-red-500 hover:text-red-700 text-sm font-medium">
+                                            Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="py-12 text-center">
+                <svg class="h-16 w-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                </svg>
+                <p class="text-gray-600">You don't have any read notifications.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Tab switching functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const tabs = document.querySelectorAll('.tab-button');
+        const panels = document.querySelectorAll('.tab-panel');
+        
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Deactivate all tabs
+                tabs.forEach(t => {
+                    t.classList.remove('text-blue-500', 'border-b-2', 'border-blue-500');
+                    t.classList.add('text-gray-500', 'hover:text-gray-700');
+                    t.setAttribute('aria-selected', 'false');
+                });
+                
+                // Hide all panels
+                panels.forEach(panel => {
+                    panel.classList.add('hidden');
+                });
+                
+                // Activate clicked tab
+                tab.classList.remove('text-gray-500', 'hover:text-gray-700');
+                tab.classList.add('text-blue-500', 'border-b-2', 'border-blue-500');
+                tab.setAttribute('aria-selected', 'true');
+                
+                // Show corresponding panel
+                const panelId = tab.getAttribute('aria-controls');
+                document.getElementById(panelId).classList.remove('hidden');
+            });
+        });
+        
+        // Handle mark as read forms
+        document.querySelectorAll('.mark-read-form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const notificationItem = this.closest('.notification-item');
+                const notificationId = notificationItem.dataset.id;
+                
+                fetch(this.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        notificationItem.classList.remove('bg-blue-50');
+                        
+                        // Move to read tab and update counter
+                        const unreadTab = document.getElementById('unread-tab');
+                        const countSpan = unreadTab.querySelector('span');
+                        
+                        if (countSpan) {
+                            const currentCount = parseInt(countSpan.textContent);
+                            if (currentCount > 1) {
+                                countSpan.textContent = currentCount - 1;
+                            } else {
+                                countSpan.remove();
+                            }
+                        }
+                        
+                        // Remove the mark as read button
+                        this.remove();
+                    }
+                });
+            });
+        });
+        
+        // Handle delete forms
+        document.querySelectorAll('.delete-form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const notificationItem = this.closest('.notification-item');
+                
+                fetch(this.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        notificationItem.remove();
+                        
+                        // Update counter if it's an unread notification
+                        if (notificationItem.classList.contains('bg-blue-50')) {
+                            const unreadTab = document.getElementById('unread-tab');
+                            const countSpan = unreadTab.querySelector('span');
+                            
+                            if (countSpan) {
+                                const currentCount = parseInt(countSpan.textContent);
+                                if (currentCount > 1) {
+                                    countSpan.textContent = currentCount - 1;
+                                } else {
+                                    countSpan.remove();
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+        });
+    });
+</script>
+{% endblock %}

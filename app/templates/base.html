@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if title %}{{ title }} - {% endif %}Travel and Tourism Management System</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Optional additional styles -->
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="min-h-screen bg-gray-50 flex flex-col">
+    <!-- Navigation -->
+    <header>
+        <nav class="bg-blue-500 shadow">
+            <div class="max-w-7xl mx-auto px-4 py-3">
+                <div class="flex justify-between items-center">
+                    <!-- Logo -->
+                    <a href="{{ url_for('main.index') }}" class="text-white font-bold text-xl">TTMS</a>
+                    
+                    <!-- Navigation Links - Desktop -->
+                    <div class="hidden md:flex space-x-6 items-center">
+                        <a href="{{ url_for('main.index') }}" class="text-white hover:text-yellow-300 transition-colors">Home</a>
+                        <a href="{{ url_for('travel.packages') }}" class="text-white hover:text-yellow-300 transition-colors">Packages</a>
+                        {% if current_user.is_authenticated %}
+                            <a href="{{ url_for('main.dashboard') }}" class="text-white hover:text-yellow-300 transition-colors">Dashboard</a>
+                            <a href="{{ url_for('booking.my_bookings') }}" class="text-white hover:text-yellow-300 transition-colors">My Bookings</a>
+                            {% if current_user.role and current_user.role.name == 'Admin' %}
+                                <a href="{{ url_for('admin.index') }}" class="text-white hover:text-yellow-300 transition-colors">Admin</a>
+                            {% endif %}
+                            <a href="{{ url_for('auth.logout') }}" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors">Logout</a>
+                        {% else %}
+                            <a href="{{ url_for('auth.login') }}" class="text-white hover:text-yellow-300 transition-colors">Login</a>
+                            <a href="{{ url_for('auth.register') }}" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors">Register</a>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Mobile menu button -->
+                    <button id="mobile-menu-button" class="md:hidden text-white focus:outline-none" aria-label="Toggle menu" aria-expanded="false" aria-controls="mobile-menu">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <!-- Mobile menu -->
+                <div id="mobile-menu" class="md:hidden hidden pt-4 pb-2">
+                    <a href="{{ url_for('main.index') }}" class="block text-white py-2 hover:bg-blue-600 px-2 rounded">Home</a>
+                    <a href="{{ url_for('travel.packages') }}" class="block text-white py-2 hover:bg-blue-600 px-2 rounded">Packages</a>
+                    {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('main.dashboard') }}" class="block text-white py-2 hover:bg-blue-600 px-2 rounded">Dashboard</a>
+                        <a href="{{ url_for('booking.my_bookings') }}" class="block text-white py-2 hover:bg-blue-600 px-2 rounded">My Bookings</a>
+                        {% if current_user.role and current_user.role.name == 'Admin' %}
+                            <a href="{{ url_for('admin.index') }}" class="block text-white py-2 hover:bg-blue-600 px-2 rounded">Admin</a>
+                        {% endif %}
+                        <a href="{{ url_for('auth.logout') }}" class="block bg-red-500 text-white py-2 px-2 mt-2 rounded">Logout</a>
+                    {% else %}
+                        <a href="{{ url_for('auth.login') }}" class="block text-white py-2 hover:bg-blue-600 px-2 rounded">Login</a>
+                        <a href="{{ url_for('auth.register') }}" class="block bg-green-500 text-white py-2 px-2 mt-2 rounded">Register</a>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+    </header>
+    
+    <!-- Search Bar -->
+    <div class="bg-yellow-100">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <form action="{{ url_for('main.search') }}" method="get" class="flex flex-wrap gap-2 md:gap-4" aria-label="Travel search form">
+                <div class="w-full md:w-auto flex-grow md:flex-grow-0">
+                    <label for="destination" class="sr-only">Destination</label>
+                    <input type="text" name="destination" id="destination" placeholder="Destination" 
+                           class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="w-full md:w-auto flex-grow md:flex-grow-0">
+                    <label for="start_date" class="sr-only">Start Date</label>
+                    <input type="date" name="start_date" id="start_date"
+                           class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="w-full md:w-auto flex-grow md:flex-grow-0">
+                    <label for="end_date" class="sr-only">End Date</label>
+                    <input type="date" name="end_date" id="end_date"
+                           class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="w-full md:w-auto flex-grow md:flex-grow-0">
+                    <label for="guests" class="sr-only">Number of Guests</label>
+                    <input type="number" name="guests" id="guests" min="1" value="1" 
+                           class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="w-full md:w-auto">
+                    <button type="submit" class="w-full bg-green-500 hover:bg-green-600 text-white py-2 px-6 rounded transition-colors">
+                        Search
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="max-w-7xl mx-auto px-4 py-4" aria-live="polite">
+                {% for category, message in messages %}
+                    {% set alert_class = {
+                        'success': 'bg-green-200 text-green-800',
+                        'info': 'bg-blue-200 text-blue-800',
+                        'warning': 'bg-yellow-200 text-yellow-800',
+                        'danger': 'bg-red-200 text-red-800'
+                    } %}
+                    <div class="{{ alert_class.get(category, 'bg-gray-200') }} px-4 py-3 rounded relative mb-2" role="alert">
+                        <span class="block sm:inline">{{ message }}</span>
+                        <button type="button" class="absolute top-0 bottom-0 right-0 px-4 py-3 close-alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 py-6">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-lg font-bold mb-2">TTMS</h3>
+                    <p class="text-gray-400">Travel and Tourism Management System</p>
+                    <p class="text-gray-400">&copy; 2025 Global Travel Solutions</p>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-2">Quick Links</h4>
+                    <ul class="space-y-1">
+                        <li><a href="{{ url_for('main.index') }}" class="text-gray-400 hover:text-white transition-colors">Home</a></li>
+                        <li><a href="{{ url_for('travel.packages') }}" class="text-gray-400 hover:text-white transition-colors">Packages</a></li>
+                        <li><a href="{{ url_for('main.about') }}" class="text-gray-400 hover:text-white transition-colors">About Us</a></li>
+                        <li><a href="{{ url_for('main.contact') }}" class="text-gray-400 hover:text-white transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-2">Contact Us</h4>
+                    <address class="not-italic">
+                        <ul class="space-y-1">
+                            <li class="text-gray-400">123 Travel Street</li>
+                            <li class="text-gray-400">Destination City, DC 12345</li>
+                            <li class="text-gray-400">info@ttms.example.com</li>
+                            <li class="text-gray-400">+1 (555) 123-4567</li>
+                        </ul>
+                    </address>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- JavaScript -->
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const menu = document.getElementById('mobile-menu');
+            const expanded = menu.classList.toggle('hidden');
+            this.setAttribute('aria-expanded', !expanded);
+        });
+        
+        // Flash message close buttons
+        document.querySelectorAll('.close-alert').forEach(function(button) {
+            button.addEventListener('click', function() {
+                this.parentElement.style.display = 'none';
+            });
+        });
+    </script>
+    
+    <!-- Optional additional scripts -->
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

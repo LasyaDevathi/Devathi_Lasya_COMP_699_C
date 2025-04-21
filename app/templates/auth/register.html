@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="max-w-2xl mx-auto bg-white rounded overflow-hidden">
+    <div class="py-4 px-6 bg-blue-500">
+        <h1 class="text-xl font-bold text-white text-center">Create Account</h1>
+    </div>
+    <div class="p-6">
+        <form method="post" action="{{ url_for('auth.register') }}" aria-label="Registration form">
+            {{ form.hidden_tag() }}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <!-- Username -->
+                <div>
+                    {{ form.username.label(class="block text-gray-700 text-base font-medium mb-2") }}
+                    {{ form.username(class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500", id="username", autocomplete="username") }}
+                    {% if form.username.errors %}
+                        <div class="text-red-600 text-sm mt-1" role="alert">
+                            {% for error in form.username.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Email -->
+                <div>
+                    {{ form.email.label(class="block text-gray-700 text-base font-medium mb-2") }}
+                    {{ form.email(class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500", id="email", autocomplete="email") }}
+                    {% if form.email.errors %}
+                        <div class="text-red-600 text-sm mt-1" role="alert">
+                            {% for error in form.email.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- First Name -->
+                <div>
+                    {{ form.first_name.label(class="block text-gray-700 text-base font-medium mb-2") }}
+                    {{ form.first_name(class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500", id="first_name", autocomplete="given-name") }}
+                    {% if form.first_name.errors %}
+                        <div class="text-red-600 text-sm mt-1" role="alert">
+                            {% for error in form.first_name.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Last Name -->
+                <div>
+                    {{ form.last_name.label(class="block text-gray-700 text-base font-medium mb-2") }}
+                    {{ form.last_name(class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500", id="last_name", autocomplete="family-name") }}
+                    {% if form.last_name.errors %}
+                        <div class="text-red-600 text-sm mt-1" role="alert">
+                            {% for error in form.last_name.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Phone -->
+                <div>
+                    {{ form.phone.label(class="block text-gray-700 text-base font-medium mb-2") }}
+                    {{ form.phone(class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500", id="phone", autocomplete="tel") }}
+                    {% if form.phone.errors %}
+                        <div class="text-red-600 text-sm mt-1" role="alert">
+                            {% for error in form.phone.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Address -->
+            <div class="mb-4">
+                {{ form.address.label(class="block text-gray-700 text-base font-medium mb-2") }}
+                {{ form.address(class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500", id="address", autocomplete="street-address") }}
+                {% if form.address.errors %}
+                    <div class="text-red-600 text-sm mt-1" role="alert">
+                        {% for error in form.address.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Password fields -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div>
+                    {{ form.password.label(class="block text-gray-700 text-base font-medium mb-2") }}
+                    {{ form.password(class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500", id="password", autocomplete="new-password") }}
+                    {% if form.password.errors %}
+                        <div class="text-red-600 text-sm mt-1" role="alert">
+                            {% for error in form.password.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    {{ form.password2.label(class="block text-gray-700 text-base font-medium mb-2") }}
+                    {{ form.password2(class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500", id="password2", autocomplete="new-password") }}
+                    {% if form.password2.errors %}
+                        <div class="text-red-600 text-sm mt-1" role="alert">
+                            {% for error in form.password2.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="flex items-center justify-between mb-4">
+                {{ form.submit(class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors") }}
+                <a href="{{ url_for('auth.login') }}" class="inline-block font-medium text-base text-blue-500 hover:text-blue-700">
+                    Already have an account?
+                </a>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

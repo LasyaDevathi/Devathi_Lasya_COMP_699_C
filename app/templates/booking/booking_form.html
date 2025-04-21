@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2">Book Your Trip</h1>
+    <p class="text-gray-600">Complete the form below to book {{ package.name }}</p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Booking Form - First 2 columns -->
+    <div class="lg:col-span-2">
+        <form method="post" action="{{ url_for('booking.book_package', package_id=package.id) }}" class="bg-white border border-gray-200 rounded">
+            {{ form.hidden_tag() }}
+            
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">Booking Details</h2>
+                
+                <div class="space-y-6">
+                    <!-- Date Range -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            {{ form.start_date.label(class="block text-sm font-medium text-gray-700 mb-1") }}
+                            {{ form.start_date(class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500", required=true) }}
+                            {% if form.start_date.errors %}
+                                <div class="text-red-600 text-sm mt-1" role="alert">
+                                    {% for error in form.start_date.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div>
+                            {{ form.end_date.label(class="block text-sm font-medium text-gray-700 mb-1") }}
+                            {{ form.end_date(class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500", required=true) }}
+                            {% if form.end_date.errors %}
+                                <div class="text-red-600 text-sm mt-1" role="alert">
+                                    {% for error in form.end_date.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Number of Guests -->
+                    <div>
+                        {{ form.num_guests.label(class="block text-sm font-medium text-gray-700 mb-1") }}
+                        {{ form.num_guests(class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500", required=true) }}
+                        {% if form.num_guests.errors %}
+                            <div class="text-red-600 text-sm mt-1" role="alert">
+                                {% for error in form.num_guests.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <p class="text-sm text-gray-500 mt-1">Maximum {{ package.max_guests }} guests allowed</p>
+                    </div>
+                    
+                    <!-- Special Requests -->
+                    <div>
+                        {{ form.special_requests.label(class="block text-sm font-medium text-gray-700 mb-1") }}
+                        {{ form.special_requests(class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500", rows=4) }}
+                        {% if form.special_requests.errors %}
+                            <div class="text-red-600 text-sm mt-1" role="alert">
+                                {% for error in form.special_requests.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <p class="text-sm text-gray-500 mt-1">Optional: Any dietary requirements, accessibility needs, or special occasions?</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">Guest Information</h2>
+                
+                <div class="mb-6">
+                    <h3 class="text-lg font-medium text-gray-700 mb-2">Primary Guest</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="first_name" class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                            <input type="text" id="first_name" name="first_name" value="{{ current_user.first_name }}" readonly
+                                   class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded">
+                        </div>
+                        <div>
+                            <label for="last_name" class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                            <input type="text" id="last_name" name="last_name" value="{{ current_user.last_name }}" readonly
+                                   class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded">
+                        </div>
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <input type="email" id="email" name="email" value="{{ current_user.email }}" readonly
+                                   class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded">
+                        </div>
+                        <div>
+                            <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                            <input type="tel" id="phone" name="phone" value="{{ current_user.phone }}" readonly
+                                   class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded">
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-2">
+                        Need to update your information? <a href="#" class="text-blue-500 hover:text-blue-700">Edit your profile</a>.
+                    </p>
+                </div>
+                
+                <!-- We could add additional guest information fields here if required -->
+            </div>
+            
+            <div class="p-6">
+                <div class="flex items-start mb-6">
+                    <div class="flex items-center h-5">
+                        <input id="terms" name="terms" type="checkbox" required
+                               class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                    </div>
+                    <div class="ml-3 text-sm">
+                        <label for="terms" class="font-medium text-gray-700">I agree to the terms and conditions</label>
+                        <p class="text-gray-500">By booking this package, you agree to our <a href="#" class="text-blue-500 hover:text-blue-700">Terms of Service</a> and <a href="#" class="text-blue-500 hover:text-blue-700">Cancellation Policy</a>.</p>
+                    </div>
+                </div>
+                
+                {{ form.submit(class="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-4 rounded transition-colors") }}
+            </div>
+        </form>
+    </div>
+    
+    <!-- Trip Summary - Third column -->
+    <div>
+        <div class="bg-white border border-gray-200 rounded sticky top-4">
+            <div class="p-5 border-b border-gray-200">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">Trip Summary</h2>
+                
+                <div class="flex items-center mb-4">
+                    <img src="{{ package.image_url }}" alt="{{ package.name }}" 
+                         class="w-20 h-20 object-cover rounded mr-4" 
+                         onerror="this.src='https://via.placeholder.com/80?text={{ package.destination[0] }}'; this.onerror='';">
+                    <div>
+                        <h3 class="font-medium text-gray-800">{{ package.name }}</h3>
+                        <p class="text-gray-600 text-sm">{{ package.destination }}</p>
+                    </div>
+                </div>
+                
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Package Type:</span>
+                        <span class="text-gray-800">{{ package.duration_days }} days tour</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Price per day:</span>
+                        <span class="text-gray-800">${{ package.price_per_day }}</span>
+                    </div>
+                    <div class="flex justify-between" id="date-range">
+                        <span class="text-gray-600">Dates:</span>
+                        <span class="text-gray-800">Select dates above</span>
+                    </div>
+                    <div class="flex justify-between" id="duration">
+                        <span class="text-gray-600">Duration:</span>
+                        <span class="text-gray-800">0 days</span>
+                    </div>
+                    <div class="flex justify-between" id="guests">
+                        <span class="text-gray-600">Guests:</span>
+                        <span class="text-gray-800">0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-5 border-b border-gray-200 bg-gray-50">
+                <h3 class="font-medium text-gray-800 mb-3">Price Breakdown</h3>
+                
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between" id="base-price">
+                        <span class="text-gray-600">Base price:</span>
+                        <span class="text-gray-800">$0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Taxes & fees:</span>
+                        <span class="text-gray-800">$0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-5">
+                <div class="flex justify-between font-bold text-lg">
+                    <span>Total:</span>
+                    <span id="total-price">$0</span>
+                </div>
+                
+                <div class="mt-4 text-sm text-gray-600">
+                    <p>Due now: $0 (0% deposit)</p>
+                    <p>Cancellation policy: Free up to 7 days before arrival</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Update trip summary based on form inputs
+    document.addEventListener('DOMContentLoaded', function() {
+        const startDateInput = document.getElementById('start_date');
+        const endDateInput = document.getElementById('end_date');
+        const guestsInput = document.getElementById('num_guests');
+        
+        const pricePerDay = {{ package.price_per_day }};
+        const taxRate = 0.08; // 8% tax for this example
+        
+        // Update price calculation when inputs change
+        function updatePriceCalculation() {
+            let startDate = new Date(startDateInput.value);
+            let endDate = new Date(endDateInput.value);
+            let guests = parseInt(guestsInput.value) || 0;
+            
+            // Only calculate if dates are valid
+            if (startDate && endDate && startDate < endDate) {
+                // Calculate duration in days
+                const durationMs = endDate - startDate;
+                const durationDays = Math.ceil(durationMs / (1000 * 60 * 60 * 24));
+                
+                // Update summary display
+                document.getElementById('date-range').querySelector('span:last-child').textContent = 
+                    `${startDate.toLocaleDateString('en-US')} - ${endDate.toLocaleDateString('en-US')}`;
+                document.getElementById('duration').querySelector('span:last-child').textContent = 
+                    `${durationDays} days`;
+                document.getElementById('guests').querySelector('span:last-child').textContent = 
+                    `${guests} ${guests === 1 ? 'guest' : 'guests'}`;
+                
+                // Calculate prices
+                const basePrice = pricePerDay * durationDays * guests;
+                const taxes = basePrice * taxRate;
+                const totalPrice = basePrice + taxes;
+                
+                // Update price display
+                document.getElementById('base-price').querySelector('span:last-child').textContent = 
+                    `$${basePrice.toFixed(2)}`;
+                document.querySelector('#p-5 div:nth-child(2)').querySelector('span:last-child').textContent = 
+                    `$${taxes.toFixed(2)}`;
+                document.getElementById('total-price').textContent = 
+                    `$${totalPrice.toFixed(2)}`;
+                
+                // Update deposit due now
+                document.querySelector('.mt-4 p:first-child').textContent = 
+                    `Due now: $${(totalPrice * 0.2).toFixed(2)} (20% deposit)`;
+            }
+        }
+        
+        // Add event listeners to form inputs
+        startDateInput.addEventListener('change', updatePriceCalculation);
+        endDateInput.addEventListener('change', updatePriceCalculation);
+        guestsInput.addEventListener('change', updatePriceCalculation);
+        
+        // Initialize with any pre-filled values
+        updatePriceCalculation();
+    });
+</script>
+{% endblock %}
